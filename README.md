@@ -13,9 +13,9 @@ Applying uniform replenishment rules across a heterogeneous product catalog crea
 
 ## 2. Data Pipeline & Methodology
 Using the **Online Retail II** transactional dataset (UCI / Kaggle):
-1. **Data Cleaning:** Filtered out cancelled invoices (`C`), negative returns, and non-physical service codes (`POST`, `BANK CHARGES`, `M`, `DOT`) to isolate primary physical SKU demand.
-2. **Weekly Time-Bucketing:** Aggregated intraday transactions into fixed weekly planning buckets (`W-MON`) with explicit zero-filling for weeks with zero sales, preventing downward bias in demand variance.
-3. **ABC-XYZ Segmentation:** Cross-referenced Pareto cumulative revenue contribution (`80% / 15% / 5%`) with demand volatility measured via the Coefficient of Variation ($CV = \sigma_d / \mu_d$):
+1. **Data Cleaning:** Filtered out cancelled invoices (C), negative returns, and non-physical service codes (POST, BANK CHARGES, M, DOT) to isolate primary physical SKU demand.
+2. **Weekly Time-Bucketing:** Aggregated intraday transactions into fixed weekly planning buckets (Monday-aligned) with explicit zero-filling for weeks with zero sales, preventing downward bias in demand variance.
+3. **ABC-XYZ Segmentation:** Cross-referenced Pareto cumulative revenue contribution (80% / 15% / 5%) with demand volatility measured via the Coefficient of Variation ($CV = \sigma_d / \mu_d$):
    * **Class X ($CV < 0.5$):** Stable, predictable demand.
    * **Class Y ($0.5 \le CV < 1.0$):** Moderate variability / seasonal fluctuations.
    * **Class Z ($CV \ge 1.0$):** Highly erratic or intermittent demand.
@@ -54,14 +54,14 @@ Using the **Online Retail II** transactional dataset (UCI / Kaggle):
 
 ---
 
-## 5. Model Limitations and Engineering Insights
+## 5. Model Limitations & Engineering Insights
 To bridge the gap between theoretical modeling and real-world ERP/IBP implementation, three structural assumptions must be accounted for:
 * **Breakdown of Normality on Class Z Demand:** The standard parametric safety stock formula assumes normally distributed weekly demand. For intermittent SKUs with frequent zero-demand weeks (95.6% of this catalog), Gaussian assumptions distort buffer sizing; in production, Class Z items require **Make-to-Order** rules or discrete/non-parametric distributions (e.g., Poisson, Negative Binomial, or empirical bootstrapping).
 * **Seasonality vs. True Uncertainty:** The *Online Retail II* dataset exhibits strong Q4 holiday seasonality. Computing $\sigma_d$ across raw historical demand conflates predictable seasonal peaks with random noise. A production-grade model should size safety stocks on **Forecast Error (RMSE)** rather than raw demand standard deviation.
-* **Valuation Proxy (Retail Price vs. COGS):** Because the public dataset only provides unit selling prices (`Price`) rather than procurement costs, capital figures represent an upper-bound retail valuation proxy. In corporate accounting, buffers are valued at unit **COGS** (*Cost of Goods Sold*).
+* **Valuation Proxy (Retail Price vs. COGS):** Because the public dataset only provides unit selling prices rather than procurement costs, capital figures represent an upper-bound retail valuation proxy. In corporate accounting, buffers are valued at unit **COGS** (*Cost of Goods Sold*).
 
 ---
 
 ## 6. Tech Stack
-* **Python:** Pandas, NumPy, SciPy (`stats.norm`), Matplotlib, Seaborn
+* **Python:** Pandas, NumPy, SciPy, Matplotlib, Seaborn
 * **Environment:** Google Colab / Jupyter Notebook
